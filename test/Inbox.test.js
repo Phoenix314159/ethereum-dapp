@@ -4,6 +4,7 @@ const provider = ganache.provider();
 const Web3 = require('web3');
 const web3 = new Web3(provider);
 const initialMessage = '99initialMessage99';
+const gas = '1000000';
 const {['Inbox.sol']: {Inbox : {abi, evm: {bytecode: {object}}}}} = require('../compile');
 require('events').EventEmitter.defaultMaxListeners = Infinity;
 
@@ -14,7 +15,7 @@ beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
     inbox = await new web3.eth.Contract(abi)
         .deploy({data: object, arguments: [initialMessage]})
-        .send({from: accounts[0], gas: '1000000'});
+        .send({from: accounts[0], gas });
     inbox.setProvider(provider);
 
 });
