@@ -18,7 +18,7 @@ const createConfiguration = () => {
             }
         }
     }
-};
+}
 const getImports = dependency => {
     switch (dependency) {
         case 'Inbox.sol':
