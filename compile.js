@@ -1,30 +1,38 @@
 const solc = require('solc');
-
-const input = {
-    language: 'Solidity',
-    sources: {
-        'Inbox.sol': {
-            content: 'contract Inbox { function f() public { } }'
+const path = require('path');
+const fs = require('fs-extra');
+const inboxPath = path.resolve(__dirname, 'contracts', 'Inbox.sol');
+const createConfiguration = () => {
+    return {
+        language: 'Solidity',
+        sources: {
+            'Inbox.sol': {
+                content: fs.readFileSync(inboxPath, 'utf8')
+            }
         },
-        'Hello.sol': {
-            content: 'contract Hello { function f() public { } }'
-        }
-    },
-    settings: {
-        outputSelection: {
-            '*': {
-                '*': ['*']
+        settings: {
+            outputSelection: {
+                '*': {
+                    '*': ['*']
+                }
             }
         }
     }
 };
+const getImports = dependency => {
+    switch (dependency) {
+        case 'Inbox.sol':
+            return {contents: fs.readFileSync(inboxPath, 'utf8')};
+        /*case 'AnotherImportedSolidityFile.sol':
+            return {contents: fs.readFileSync(path.resolve(__dirname, 'contracts', 'AnotherImportedSolidityFile.sol'), 'utf8')};*/
+        default:
+            return {error: 'File not found'}
+    }
+};
+const compileSources = config => {
+    return JSON.parse(solc.compile(JSON.stringify(config), getImports));
+};
+const output = compileSources(createConfiguration());
 
-const output = JSON.parse(solc.compile(JSON.stringify(input)))
 
-// `output` here contains the JSON output as specified in the documentation
-for (let contractName in output.contracts['Inbox.sol']) {
-    console.log(contractName + ': ' + output.contracts['Inbox.sol'][contractName].evm.bytecode.object)
-}
-for (let contractName in output.contracts['Hello.sol']) {
-    console.log(contractName + ': ' + output.contracts['Hello.sol'][contractName].evm.bytecode.object)
-}
+module.exports = output.contracts;
